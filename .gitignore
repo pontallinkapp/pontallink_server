@@ -1,6 +1,24 @@
-/target/
-target
+# Eclipse
+.metadata/
 .classpath
 .project
 .settings/
+bin/
+tmp/
 
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# Ignorar todos os arquivos de log
+*.log
+
+# Ignorar arquivos de build
+target/
+build/
+
+# Ignorar arquivos de sistema operacionais
+.DS_Store
+Thumbs.db
