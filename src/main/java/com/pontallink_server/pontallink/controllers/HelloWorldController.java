@@ -10,7 +10,7 @@ public class HelloWorldController {
 
     @GetMapping("/hello")
     public String helloWorld() {
-        return "Hello World!6";
+        return "PontallinkApp ÉNOIX!!!";
     }
 
 }
