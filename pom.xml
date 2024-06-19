@@ -11,7 +11,7 @@
 	<groupId>com.pontallink-server</groupId>
 	<artifactId>pontallink</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>pontallink-server</name>
 	<description>Pontallink-Back</description>
 	<url/>
