@@ -6,6 +6,8 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.pontallink_server.pontallink.entities.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -42,6 +44,11 @@ public class TokenService {
         } catch (JWTVerificationException exception) {
             throw new RuntimeException("Token JWT inválido ou expirado!");
         }
+    }
+
+    public String getSubjectCurrentToken() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return user.getUsername();
     }
 
     private Instant dataExpiracao() {

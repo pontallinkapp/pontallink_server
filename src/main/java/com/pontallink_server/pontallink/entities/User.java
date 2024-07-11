@@ -26,6 +26,21 @@ public class User implements UserDetails {
     private String login;
     private String password;
 
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "bio", nullable = true)
+    private String bio;
+
+    @Column(name = "condominium", nullable = false)
+    private String condominium;
+
+    @Column(name = "user_profile_image_mid", nullable = true)
+    private String userProfileImageMid;
+
+    @Column(name = "active", nullable = false)
+    private Boolean active;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
