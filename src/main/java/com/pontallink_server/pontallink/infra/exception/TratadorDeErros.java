@@ -21,6 +21,11 @@ public class TratadorDeErros {
         return ResponseEntity.badRequest().body(erros.stream().map(DadosErroValidacao::new).toList());
     }
 
+    @ExceptionHandler(SolicitacaoJaEnviadaException.class)
+    public ResponseEntity<?> tratarErro403(SolicitacaoJaEnviadaException ex) {
+        return ResponseEntity.status(403).body(ex.getMessage());
+    }
+
     private record DadosErroValidacao(String campo, String mensagem) {
         public DadosErroValidacao(FieldError erro) {
             this(erro.getField(), erro.getDefaultMessage());

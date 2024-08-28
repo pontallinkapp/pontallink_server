@@ -6,11 +6,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.pontallink_server.pontallink.entities.User;
 
-public record UserProfileDTO(String name, String bio, List<String> interests, String condominium, String userProfileImageMid) {
+public record UserProfileDTO(Long id, String name, String bio, List<String> interests, String condominium, String userProfileImageMid) {
 
 	public UserProfileDTO(User user) {
-        this(user.getName(), user.getBio(), List.of("All"), user.getCondominium(), user.getUserProfileImageMid());
+        this(user.getId(), user.getName(), user.getBio(), List.of("All"), user.getCondominium(), user.getUserProfileImageMid());
     }
-	
 
 }

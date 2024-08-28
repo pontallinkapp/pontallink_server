@@ -35,6 +35,7 @@ public class TokenService {
 
     public String getSubject(String tokenJWT) {
         try {
+            System.out.println("Token recebido: " + tokenJWT);
             var algoritmo = Algorithm.HMAC256(secret);
             return JWT.require(algoritmo)
                     .withIssuer("API Pontal Link")
