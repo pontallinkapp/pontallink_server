@@ -46,7 +46,7 @@ public class UserController {
 
 	}
 
-	//Buscar usuário
+	//Buscar usuárioo
 	@GetMapping("/{id}")
 	public ResponseEntity<UserProfileDTO> searchUserId(@PathVariable Long id){
 
