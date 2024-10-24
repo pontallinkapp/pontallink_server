@@ -32,8 +32,9 @@ public class User implements UserDetails {
     @Column(name = "bio", nullable = true)
     private String bio;
 
-    @Column(name = "condominium", nullable = false)
-    private String condominium;
+    @ManyToOne
+    @JoinColumn(name = "condominium_id")
+    private Condominium condominium;
 
     @Column(name = "user_profile_image_mid", nullable = true)
     private String userProfileImageMid;

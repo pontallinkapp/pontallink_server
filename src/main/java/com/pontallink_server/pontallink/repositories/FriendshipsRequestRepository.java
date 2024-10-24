@@ -14,4 +14,7 @@ public interface FriendshipsRequestRepository extends JpaRepository<FriendshipsR
     List<FriendshipsRequest> findPendingRequestsByReceiverId(@Param("receiverId") Long receiverId);
 
     Optional<FriendshipsRequest> findBySenderAndReceiver(User sender, User receiver);
+
+    @Query("SELECT friendshipsRequest FROM FriendshipsRequest friendshipsRequest WHERE friendshipsRequest.sender.id = :userId AND friendshipsRequest.receiver.id = :friendId AND friendshipsRequest.status = 'PENDING' ")
+    Optional<FriendshipsRequest> checkStatus(@Param("userId")Long userId, @Param("friendId")Long friendId);
 }

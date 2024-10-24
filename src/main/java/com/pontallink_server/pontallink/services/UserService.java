@@ -1,5 +1,6 @@
 package com.pontallink_server.pontallink.services;
 
+import com.pontallink_server.pontallink.dtos.UserProfileCondominiumDTO;
 import com.pontallink_server.pontallink.entities.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import com.pontallink_server.pontallink.dtos.UserProfileDTO;
 import com.pontallink_server.pontallink.repositories.UserRepository;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +29,25 @@ public class UserService {
         return new UserProfileDTO((User) userRepository.findByLogin(username));
     }
 
+    public List<UserProfileCondominiumDTO> getUserProfileId(Long id) throws EntityNotFoundException {
+        List<Object[]> resultList = userRepository.findUserProfileById(id);
+
+        if (resultList.isEmpty()) {
+            throw new EntityNotFoundException("Usuário não encontrado, id: " + id);
+        }
+
+        ///Busca os interesses do usuário
+        List<String> interests = userRepository.findInterestsByUserId(id);
+
+        ///Busca os amigos
+        Long friends = userRepository.countTotalFriends(id);
+
+        return resultList.stream()
+                .map(data -> new UserProfileCondominiumDTO(data, interests, friends))  // Mapeia cada linha para o DTO
+                .collect(Collectors.toList());        // Converte para uma lista
+    }
+
+
     public List<UserProfileDTO> getListFriendships(Long userId) throws EntityNotFoundException {
          List<User> friends = userRepository.findFriendsByUserId(userId);
 
@@ -41,4 +63,7 @@ public class UserService {
         //return userRepository.findAll().stream().map(UserProfileDTO::new).collect(Collectors.toList());
         return userRepository.findAll().stream().map(UserProfileDTO::new).collect(Collectors.toList());
     }
+
+    ///search todas as informações disponiveis no campo buscar
+
 }

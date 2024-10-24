@@ -2,6 +2,8 @@ package com.pontallink_server.pontallink.entities;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "friendships_requests")
 public class FriendshipsRequest {
@@ -21,6 +23,18 @@ public class FriendshipsRequest {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private FriendshipStatus status = FriendshipStatus.PENDING;
+
+    @JoinColumn(name = "created_at")
+    private LocalDateTime createdAt;
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
 
     // Getters e setters
     public Long getId() {
@@ -54,4 +68,6 @@ public class FriendshipsRequest {
     public void setStatus(FriendshipStatus status) {
         this.status = status;
     }
+
+
 }

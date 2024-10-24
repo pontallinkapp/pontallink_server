@@ -1,5 +1,7 @@
 package com.pontallink_server.pontallink.repositories;
 
+import com.pontallink_server.pontallink.dtos.UserProfileCondominiumDTO;
+import com.pontallink_server.pontallink.dtos.UserProfileDTO;
 import com.pontallink_server.pontallink.entities.FriendshipsRequest;
 import com.pontallink_server.pontallink.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,9 +10,39 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     UserDetails findByLogin(String login);
+
+    //Buscar usuario pelo id
+    @Query("SELECT users.id, users.name, users.bio, condominiums.name, users.userProfileImageMid " +
+            "FROM User users " +
+            "JOIN Condominium condominiums ON users.condominium.id = condominiums.id " +
+            "WHERE users.id = :id")
+    List<Object[]> findUserProfileById(Long id);
+
+    //Interesses do usuario
+    @Query("SELECT interest.interest " +
+            "FROM Interest interest " +
+            "JOIN User users ON users.id = interest.user.id " +
+            "WHERE users.id = :userId")
+    List<String> findInterestsByUserId(Long userId);
+
+    //Buscar amigos
+    @Query("SELECT friend.id, friend.sender, friend.receiver, friend.status " +
+            "FROM FriendshipsRequest friend " +
+            "WHERE (friend.sender.id = :userId OR friend.receiver.id = :userId) " +
+            "AND friend.status = 'ACCEPTED'")
+    List<Number> findFriendsOnlineById(@Param("userId") Long userId);
+
+    //Buscar numero de amigos
+    @Query("SELECT COUNT(friend.id) " +
+            "FROM FriendshipsRequest friend " +
+            "WHERE (friend.sender.id = :userId OR friend.receiver.id = :userId) " +
+            "AND friend.status = 'ACCEPTED'")
+    Long countTotalFriends(@Param("userId") Long userId);
+
 
     // Método para buscar amigos com base no ID do usuário
     //JPQL

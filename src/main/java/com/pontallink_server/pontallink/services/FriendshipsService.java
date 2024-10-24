@@ -2,6 +2,7 @@ package com.pontallink_server.pontallink.services;
 
 import com.pontallink_server.pontallink.dtos.FriendshipRequestInformationDTO;
 import com.pontallink_server.pontallink.dtos.FriendshipsIdDTO;
+import com.pontallink_server.pontallink.dtos.NotificationDTO;
 import com.pontallink_server.pontallink.entities.FriendshipStatus;
 import com.pontallink_server.pontallink.entities.FriendshipsRequest;
 import com.pontallink_server.pontallink.entities.User;
@@ -9,8 +10,10 @@ import com.pontallink_server.pontallink.repositories.FriendshipsRequestRepositor
 import com.pontallink_server.pontallink.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,6 +31,9 @@ public class FriendshipsService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     //Método para enviar solicitações de Amizade
     public FriendshipRequestInformationDTO sendFriendshipRequest(Long senderId, Long receiverId) throws EntityNotFoundException {
@@ -54,9 +60,15 @@ public class FriendshipsService {
         FriendshipsRequest friendshipRequest = new FriendshipsRequest();
         friendshipRequest.setSender(sender);
         friendshipRequest.setReceiver(receiver);
+        friendshipRequest.setCreatedAt(LocalDateTime.now());
         friendshipRequest.setStatus(FriendshipStatus.PENDING);
 
         FriendshipsRequest savedRequest = friendshipsRequestRepository.save(friendshipRequest);
+
+        // Envia notificação via WebSocket para o usuário receptor
+        messagingTemplate.convertAndSend("/topic/friendships/" + receiverId,
+                new NotificationDTO("PENDING", senderId));
+
         return new FriendshipRequestInformationDTO(savedRequest);
     }
 
@@ -89,10 +101,20 @@ public class FriendshipsService {
             throw new RuntimeException("Usuário não autorizado para aceitar esta solicitação!");
         }
 
-
-        //Atualiza o status da solicitação para "aceita"
+        // Atualiza o status da solicitação para "aceita"
         request.setStatus(FriendshipStatus.ACCEPTED);
-        return friendshipsRequestRepository.save(request);
+
+        // Salva a solicitação atualizada no banco de dados
+        FriendshipsRequest savedRequest = friendshipsRequestRepository.save(request);
+
+        // Envia notificação via WebSocket para o usuário que enviou a solicitação (sender)
+        Long senderId = request.getSender().getId();
+        Long receiverId = request.getReceiver().getId();
+
+        messagingTemplate.convertAndSend("/topic/friendships/" + senderId,
+                new NotificationDTO("ACCEPTED", receiverId));
+
+        return savedRequest;
     }
 
     //Método para recusar uma solicitação de amizade
@@ -113,8 +135,20 @@ public class FriendshipsService {
 
         //Atualiza o status da solicitação para "recusado"
         request.setStatus(FriendshipStatus.DECLINED);
-        return friendshipsRequestRepository.save(request);
+
+        // Salva a solicitação atualizada no banco de dados
+        FriendshipsRequest savedRequest = friendshipsRequestRepository.save(request);
+
+        // Envia notificação via WebSocket para o usuário que enviou a solicitação (sender)
+        Long senderId = request.getSender().getId();
+        Long receiverId = request.getReceiver().getId();
+
+        messagingTemplate.convertAndSend("/topic/friendships/" + senderId,
+                new NotificationDTO("DECLINED", receiverId));
+
+        return savedRequest;
     }
+
 
     //Método para excluir amizade
     public FriendshipsRequest deleteFriendshipRequest(Long idFriendshipRequest, Long userId) throws EntityNotFoundException {
@@ -126,21 +160,33 @@ public class FriendshipsService {
 
         FriendshipsRequest request = optionalRequest.get() ;
 
-        //Usei para verificar Usuario/ logado, receptor, enviador
-        /*Long receiverId = request.getReceiver().getId();
-        Long senderId = request.getSender().getId();
-
-        System.out.println("Receiver ID: " + receiverId);
-        System.out.println("Sender ID: " + senderId);
-        System.out.println("User ID Logado: " + userId);*/
-
         //Veridica se o usuário atual tem vinculo com amizade!
         if(!request.getReceiver().getId().equals(userId) && !request.getSender().getId().equals(userId)){
             throw new RuntimeException("Usuário não autorizado para excluir amizade!");
         }
 
-
+        //Atualiza o status da solicitação para "recusado"
         request.setStatus(FriendshipStatus.DECLINED);
-        return friendshipsRequestRepository.save(request);
+
+        // Salva a solicitação atualizada no banco de dados
+        FriendshipsRequest savedRequest = friendshipsRequestRepository.save(request);
+
+        // Envia notificação via WebSocket para o usuário que enviou a solicitação (sender)
+        Long senderId = request.getSender().getId();
+        Long receiverId = request.getReceiver().getId();
+
+        messagingTemplate.convertAndSend("/topic/friendships/" + senderId,
+                new NotificationDTO("DECLINED", receiverId));
+
+        return savedRequest;
     }
+
+    //Metodo para verificar solicitação de amizade
+    public Optional<FriendshipsRequest> friendStatus(Long userId, Long friendId) {
+        // Busca uma solicitação de amizade pendente
+         return friendshipsRequestRepository.checkStatus(userId, friendId);
+    }
+
+    ///Método para atualizar status de solicitação amizade
+
 }
